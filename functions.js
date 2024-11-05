@@ -58,4 +58,15 @@ exports.comparePassword = async function(password, hash, res) {
     });
 };
 
+exports.testPassword = function(password, check)
+{
+    if(password == check) return true;
+    return false
+}
+
+exports.generateSession = async function(userId, sessionIp)
+{
+    return;
+}
+
 exports.isEmpty = isEmpty
