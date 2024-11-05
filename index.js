@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 
 // Importation de tous les routers
 const eventRouter = require('./routes/event')
+const userRouter = require('./routes/user')
 
 
 
@@ -13,6 +14,7 @@ app.use(bodyParser.json());
 
 // Utilisation des routes dans l'app
 app.use("/events", eventRouter)
+app.use("/user", userRouter)
 
 // URL de tests
 app.get('/', async function(req, res){

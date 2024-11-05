@@ -26,8 +26,27 @@ exports.generateQuery = function(table, rows, filters, columns = "*") {
     return query
 }
 
-exports.isEmpty = function(object) {
+const isEmpty = function(object) {
+    if(object == 0) return false;
     return Object.keys(object).length === 0
+}
+
+exports.emptyParam = function (params)
+{
+    if(!Array.isArray(params))
+    {
+        if(params == null || params == undefined || isEmpty(params) || params == "") return true;
+        return false;
+    }
+    for(var i = 0; i < params.length; i++)
+    {
+        if(params[i] == null || params[i] == undefined || isEmpty(params[i]) || params[i] === "")
+        {
+            console.log(isEmpty(params[i]))
+            return true;
+        }
+    }
+    return false
 }
 
 exports.comparePassword = async function(password, hash, res) {
@@ -38,3 +57,5 @@ exports.comparePassword = async function(password, hash, res) {
         return;
     });
 };
+
+exports.isEmpty = isEmpty
