@@ -1,4 +1,5 @@
 const express = require('express');
+const { randomBytes } = require('node:crypto');
 
 const router = express.Router()
 
@@ -39,17 +40,27 @@ router.get("/connect", (req, res) => {
         res.json({"error": "must give a nickname and a password"})
         return;
     }
-    const pass = req.body.params.password
+    const givenPass = req.body.params.password
+    console.log(givenPass)
     config.query('SELECT id, pass FROM user WHERE `nickname`=?', [req.body.params.nickname], (err, results) => {
         if (err) res.json({err})
-        if(results[0] != undefined && testPassword(pass, results[0].pass))
+        if(results.length != 0)
         {
-            // On va ici générer une session
-            return
+            console.log(results[0].pass)
+            const cryptedPass = results[0].pass
+            config.query('SELECT PASSWORD(?) as pass', [givenPass], (err, response) => {
+                if (err) res.json({err})
+                givenCryptedPass = response[0].pass
+                if(givenCryptedPass == cryptedPass)
+                {
+                    console.log("c pareil bebe")
+                    res.json({"token": "Un token qui sera généré plus tard"})
+                    return;
+                }
+                else res.json({"error": "Incorrect password or username"})
+            })
         }
-        // Le mot de passe ne correspond pas
-        res.json({"error": "Incorrect password or username"})
-        console.log("c pas pareil")
+        else res.json({"error": "Incorrect password or username"})
     })
 })
 
