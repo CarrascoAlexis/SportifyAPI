@@ -8,7 +8,8 @@ const { generateQuery, isEmpty, emptyParam } = require('../functions')
 
 router.get("/", (req, res) => {
     // Si aucun filtre n'est indiqué dans la requette ou que celui-ci est vide ({}) l'API envoie la liste complète des events
-    if(req.body.filter == undefined || req.body.filter == null || isEmpty(req.body.filter))
+    console.log(req.query)
+    if(req.query.filter == undefined || req.query.filter == null || isEmpty(req.query.filter))
     {
         config.query('SELECT * FROM event', (err, results) => {
             if(err) res.json({"error": err})
@@ -25,7 +26,7 @@ router.get("/", (req, res) => {
             return;
         }
         // Puis on génère une requette SQL avec les paramètres récupérés au dessus  (se )
-        config.query(generateQuery("event", results, req.body.filter), (err, results) => {
+        config.query(generateQuery("event", results, req.query.filter), (err, results) => {
             if(err) res.json({"error": err})
             res.json(results)
         })
@@ -46,21 +47,25 @@ router.get("/users", (req, res) => {
 })
 
 router.post("/create", (req, res) => {
-    if(req.body.params == undefined || req.body.params == null || isEmpty(req.body.params))
+    console.log(req.body)
+    if(req.body.params == undefined || req.body.params == null)
     {
         res.json({"error": "Empty body"})
         return;
     }
-    let {title, players, startDate, endDate, authorId} = req.body.params
+    let {title, description, players, startDate, endDate, authorId} = req.body.params
     if(emptyParam(players)) players = 0
     console.log([title, players, startDate, endDate, authorId])
+    // Sécurité qui casse tout je remet plus tard
     // console.log(emptyParam([title, players, startDate, endDate, authorId]))
-    if(emptyParam([title, players, startDate, endDate, authorId]))
-    {
-        res.json({"error": "empty params given"})
-        return;
-    }
-    config.query("INSERT INTO event VALUES (NULL, ?, ?, 0, CURRENT_TIMESTAMP(), ?, ?, ?)", [title, players, startDate, endDate, authorId], (err, results) => {
+    // if(emptyParam([title, players, startDate, endDate, authorId]))
+    // {
+    //     res.json({"error": "empty params given"})
+    //     console.log("c vide bebe")
+    //     return;
+    // }
+    config.query("INSERT INTO event VALUES (NULL, ?, ?, ?, 0, CURRENT_TIMESTAMP(), ?, ?, ?)", [title, description, players, startDate, endDate, authorId], (err, results) => {
+        console.log(err)
         if(err) res.json({"error": err})
         else res.json(results)
         return;
