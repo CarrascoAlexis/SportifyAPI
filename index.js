@@ -9,8 +9,9 @@ const userRouter = require('./routes/user')
 
 
 // Creation de l'app express
-var app = express();
-app.use(cors());
+var app = express();app.use(cors({
+    origin: '*'
+  }));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 

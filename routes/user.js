@@ -43,20 +43,22 @@ router.get("/connect", (req, res) => {
     }
     const givenPass = req.query.password
     console.log(givenPass)
-    config.query('SELECT id, pass, isEMploye, mail FROM user WHERE `nickname`=?', [req.query.nickname], (err, results) => {
-        if (err) res.json({err})
+    config.query('SELECT id, pass, isEmploye, mail FROM user WHERE `nickname`=?', [req.query.nickname], (err, results) => {
+        if (err) res.json({"error": err})
         if(results.length != 0)
         {
-            console.log(results[0].pass)
             const cryptedPass = results[0].pass
             config.query('SELECT PASSWORD(?) as pass', [givenPass], (err, response) => {
-                if (err) res.json({err})
+                if (err) res.json({"error": err})
                 givenCryptedPass = response[0].pass
                 if(givenCryptedPass == cryptedPass)
                 {
                     require('crypto').randomBytes(48, function(err, buffer) {
-                        var token = buffer.toString('hex');
-                        res.json({"token": token, "user": {"nickname": req.query.nickname}})
+                        const token = buffer.toString('hex');
+                        config.query('INSERT INTO session VALUES (NULL, ?, ?)', [results[0].id, token], (err, sessionResults) => {
+                            if(err) res.json({"error": err})
+                            else res.json({"token": token, "user": {"nickname": req.query.nickname, "isEmploye": results[0].isEmploye, "mail": results[0].mail, "id": results[0].id}})
+                        })
                       });
                     
                     return;
@@ -65,6 +67,49 @@ router.get("/connect", (req, res) => {
             })
         }
         else res.json({"error": "Incorrect password or username"})
+    })
+})
+
+router.get("/getSession", (req, res) => {
+    if(req.query.token == undefined || req.query.token == null)
+    {
+        res.json({"error": "must give a session token"})
+        return;
+    }
+    console.log(req.query.token)
+    config.query("SELECT userId FROM session WHERE token = ?", [req.query.token], (err, results) => {
+        if(err) res.json({"error": err})
+        else
+        {
+            if(results.length == 0)
+            {
+                res.json({"error": "no session found"})
+                return
+            }
+            config.query("SELECT nickname, isEmploye, mail, id FROM user WHERE id = ?", [results[0].userId], (err, user) => {
+                if(err) res.json({"error": err})
+                if(user[0] == null) res.json({"error": "Undefined user"})
+                else
+                {
+                    const userData = user[0]
+                    res.json(userData)
+                }   
+            })
+        }
+    })
+})
+
+router.post("/destroySession", (req, res) => {
+    console.log("chui")
+    console.log(req.body)
+    if(req.body.token == undefined || req.body.token == null)
+    {
+        res.json({"error": "must give a session token"})
+        return;
+    }
+    config.query("DELETE FROM session WHERE token = ?", [req.body.token], (err, results) => {
+        if(err) res.json({"error": err})
+        else res.json(results)
     })
 })
 
