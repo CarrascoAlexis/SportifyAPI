@@ -11,7 +11,7 @@ router.get("/", (req, res) => {
     // Si aucun filtre n'est indiqué dans la requette ou que celui-ci est vide ({}) l'API envoie la liste complète des events
     if(req.query.filter == undefined || req.query.filter == null || isEmpty(req.query.filter))
     {
-        config.query('SELECT `id`, `nickname`, `isEmploye`, `mail` FROM user', (err, results) => {
+        config.query('SELECT `id`, `nickname`, `isEmploye`, `mail`, `profile` FROM user', (err, results) => {
             if(err) res.json({"error": err})
             else res.json(results)
         })
@@ -26,7 +26,7 @@ router.get("/", (req, res) => {
             return;
         }
         // Puis on génère une requette SQL avec les paramètres récupérés au dessus  (se )
-        config.query(generatequery("user", results, req.query.filter, "`id`, `nickname`, `isEmploye`, `mail`"), (err, results) => {
+        config.query(generatequery("user", results, req.query.filter, "`id`, `nickname`, `isEmploye`, `mail`, `profile`"), (err, results) => {
             if(err) res.json({"error": err})
             res.json(results)
         })
@@ -42,8 +42,7 @@ router.get("/connect", (req, res) => {
         return;
     }
     const givenPass = req.query.password
-    console.log(givenPass)
-    config.query('SELECT id, pass, isEmploye, mail FROM user WHERE `nickname`=?', [req.query.nickname], (err, results) => {
+    config.query('SELECT id, pass, isEmploye, mail, profile FROM user WHERE `nickname`=?', [req.query.nickname], (err, results) => {
         if (err) res.json({"error": err})
         if(results.length != 0)
         {
@@ -57,7 +56,7 @@ router.get("/connect", (req, res) => {
                         const token = buffer.toString('hex');
                         config.query('INSERT INTO session VALUES (NULL, ?, ?)', [results[0].id, token], (err, sessionResults) => {
                             if(err) res.json({"error": err})
-                            else res.json({"token": token, "user": {"nickname": req.query.nickname, "isEmploye": results[0].isEmploye, "mail": results[0].mail, "id": results[0].id}})
+                            else res.json({"token": token, "user": {"nickname": req.query.nickname, "isEmploye": results[0].isEmploye, "mail": results[0].mail, "id": results[0].id, "profile": results[0].profile}})
                         })
                       });
                     
@@ -86,7 +85,7 @@ router.get("/getSession", (req, res) => {
                 res.json({"error": "no session found"})
                 return
             }
-            config.query("SELECT nickname, isEmploye, mail, id FROM user WHERE id = ?", [results[0].userId], (err, user) => {
+            config.query("SELECT nickname, isEmploye, mail, id, profile FROM user WHERE id = ?", [results[0].userId], (err, user) => {
                 if(err) res.json({"error": err})
                 if(user[0] == null) res.json({"error": "Undefined user"})
                 else
