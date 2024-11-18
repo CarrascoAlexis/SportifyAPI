@@ -99,8 +99,6 @@ router.get("/getSession", (req, res) => {
 })
 
 router.post("/destroySession", (req, res) => {
-    console.log("chui")
-    console.log(req.body)
     if(req.body.token == undefined || req.body.token == null)
     {
         res.json({"error": "must give a session token"})
@@ -109,6 +107,42 @@ router.post("/destroySession", (req, res) => {
     config.query("DELETE FROM session WHERE token = ?", [req.body.token], (err, results) => {
         if(err) res.json({"error": err})
         else res.json(results)
+    })
+})
+
+router.post("/create", (req, res) => {
+    console.log(req.body)
+    if(req.body == null | req.body == undefined)
+    {
+        res.json({"error": "Must give user data"})
+        return
+    }
+    const user = req.body
+    let isEmploye
+    if(user.isEmploye == true)
+    {
+        isEmploye = true
+    }
+    config.query("INSERT INTO user VALUES (NULL, ?, ?, ?, PASSWORD(?), ?)", [user.nickname, isEmploye, user.mail, user.password, user.profile], (err, results) => {
+        if(err) res.json({"error": err})
+        else res.json(results)
+        return
+    })
+})
+
+router.post("/edit", (req, res) => {
+    if(req.body == null | req.body == undefined)
+    {
+        res.json({"error": "Must give user data"})
+        return
+    }
+    const user = req.body
+    console.log(user)
+    config.query("UPDATE user SET nickname=?, isEmploye=?, mail=?, profile=? WHERE ID = ?", [user.nickname, user.isEmploye, user.mail, user.profile, user.id], (err, results) => {
+        console.log(err)
+        if(err) res.json({"error": err})
+        else res.json(results)
+        return
     })
 })
 
