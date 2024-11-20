@@ -35,7 +35,6 @@ router.get("/", (req, res) => {
 
 
 router.get("/connect", (req, res) => {
-    console.log(req.query)
     if(req.query.nickname == undefined || req.query.nickname == null || req.query.password == undefined || req.query.password == null)
     {
         res.json({"error": "must give a nickname and a password"})
@@ -75,7 +74,6 @@ router.get("/getSession", (req, res) => {
         res.json({"error": "must give a session token"})
         return;
     }
-    console.log(req.query.token)
     config.query("SELECT userId FROM session WHERE token = ?", [req.query.token], (err, results) => {
         if(err) res.json({"error": err})
         else
@@ -111,21 +109,18 @@ router.post("/destroySession", (req, res) => {
 })
 
 router.post("/create", (req, res) => {
-    console.log(req.body)
     if(req.body == null | req.body == undefined)
     {
         res.json({"error": "Must give user data"})
         return
     }
     const user = req.body
-    let isEmploye
-    if(user.isEmploye == true)
-    {
-        isEmploye = true
-    }
-    config.query("INSERT INTO user VALUES (NULL, ?, ?, ?, PASSWORD(?), ?)", [user.nickname, isEmploye, user.mail, user.password, user.profile], (err, results) => {
+    config.query("INSERT INTO user VALUES (NULL, ?, ?, ?, PASSWORD(?), ?)", [user.nickname, user.isEmploye, user.mail, user.password, user.profile], (err, results) => {
         if(err) res.json({"error": err})
-        else res.json(results)
+        else{
+            res.json(results) 
+        }
+
         return
     })
 })
@@ -137,12 +132,22 @@ router.post("/edit", (req, res) => {
         return
     }
     const user = req.body
-    console.log(user)
     config.query("UPDATE user SET nickname=?, isEmploye=?, mail=?, profile=? WHERE ID = ?", [user.nickname, user.isEmploye, user.mail, user.profile, user.id], (err, results) => {
-        console.log(err)
         if(err) res.json({"error": err})
         else res.json(results)
         return
+    })
+})
+
+router.delete("/delete", (req, res) => {
+    if(req.query.userId == null | req.query.userId == undefined)
+    {
+        res.json({"error": "Must give user id"})
+        return
+    }
+    config.query("DELETE FROM user WHERE id=?", [req.query.userId], (err, results) => {
+        if(err) return res.json({"error": err})
+        else return res.json(results)
     })
 })
 
