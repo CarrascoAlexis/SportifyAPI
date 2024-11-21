@@ -28,7 +28,6 @@ router.post('/eventupload', uploadEvent.array('eventPic'), (req, res) => {
     for(let i = 0; i < req.files.length; i++)
     {
         config.query("INSERT INTO eventpicture VALUES (NULL, ?, ?)", [req.body.eventId, req.files[i].filename])
-        
     }
     res.json({ message: 'Files uploaded successfully'});
 });
