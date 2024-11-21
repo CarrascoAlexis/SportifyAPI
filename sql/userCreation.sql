@@ -1,3 +1,3 @@
 CREATE USER 'sportifyUser'@'localhost' IDENTIFIED BY 'password';
 
-GRANT INSERT, SELECT, DELETE, PUDATE, FILE ON sportify.* TO 'sportifyuser'@'localhost';
+GRANT INSERT, SELECT, DELETE, UPDATE ON sportify.* TO 'sportifyUser'@'localhost';
