@@ -114,7 +114,7 @@ router.post("/create", (req, res) => {
         return res.json({"error": "Must give user data"})
     }
     const user = req.body
-    config.query("INSERT INTO user VALUES (NULL, ?, ?, ?, SELECT CONCAT('*', UPPER(SHA1(UNHEX(SHA1(?))))), ?)", [user.nickname, user.isEmploye, user.mail, user.password, user.profile], (err, results) => {
+    config.query("INSERT INTO user VALUES (NULL, ?, ?, ?, CONCAT('*', UPPER(SHA1(UNHEX(SHA1(?))))), ?)", [user.nickname, user.isEmploye, user.mail, user.password, user.profile], (err, results) => {
         if(err) res.json({"error": err})
         else{
             res.json(results) 
@@ -147,6 +147,18 @@ router.delete("/delete", (req, res) => {
     config.query("DELETE FROM user WHERE id=?", [req.query.userId], (err, results) => {
         if(err) return res.json({"error": err})
         else return res.json(results)
+    })
+})
+
+router.get("/events", (req, res) => {
+    if(req.query.filter.userId == undefined || req.query.filter.userId == null)
+    {
+        res.json({"error": "Must give an user ID"})
+        return;
+    }
+    config.query("SELECT * FROM `participation` WHERE accountId = ?", [req.query.filter.userId], (err, results) => {
+        if(err) res.json({"error": err})
+        return res.json(results)
     })
 })
 

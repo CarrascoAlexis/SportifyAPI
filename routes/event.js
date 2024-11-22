@@ -33,7 +33,6 @@ router.get("/", (req, res) => {
 });
 
 router.get("/users", (req, res) => {
-    console.log(req.query)
     if(req.query.filter.eventId == undefined || req.query.filter.eventId == null)
     {
         res.json({"error": "Must give an event ID"})
@@ -56,6 +55,47 @@ router.get("/users", (req, res) => {
    
 })
 
+router.post("/edit", (req, res) => {
+    if(req.body == null | req.body == undefined)
+    {
+        res.json({"error": "Must give event data"})
+        return
+    }
+    const event = req.body
+    // On rendx l'event invisible a chaque modification de celui-ci
+    config.query("UPDATE event SET title=?, description=?, isVisible=0, startDate=?, endDate=? WHERE ID = ?", [event.title, event.description, event.startDate, event.endDate, event.id], (err, results) => {
+        if(err) res.json({"error": err})
+        else res.json(results)
+        return
+    })
+})
+
+router.post("/validate", (req, res) => {
+    if(req.body.eventId == null | req.body.eventId == undefined)
+    {
+        res.json({"error": "Must give event id"})
+        return
+    }
+    config.query("UPDATE event SET isVisible=1 WHERE ID = ?", [req.body.eventId], (err, results) => {
+        if(err) res.json({"error": err})
+        else res.json(results)
+        return
+    })
+})
+
+router.post("/unvalidate", (req, res) => {
+    if(req.body.eventId == null | req.body.eventId == undefined)
+    {
+        res.json({"error": "Must give event id"})
+        return
+    }
+    config.query("UPDATE event SET isVisible=0 WHERE ID = ?", [req.body.eventId], (err, results) => {
+        if(err) res.json({"error": err})
+        else res.json(results)
+        return
+    })
+})
+
 router.post("/create", (req, res) => {
     if(req.body.params == undefined || req.body.params == null)
     {
@@ -64,7 +104,6 @@ router.post("/create", (req, res) => {
     }
     let {title, description, players, startDate, endDate, authorId} = req.body.params
     if(emptyParam(players)) players = 0
-    console.log([title, players, startDate, endDate, authorId])
     config.query("INSERT INTO event VALUES (NULL, ?, ?, 0, CURRENT_TIMESTAMP(), ?, ?, ?)", [title, description, startDate, endDate, authorId], (err, results) => {
         if(err) res.json({"error": err})
         else res.json(results)
@@ -73,13 +112,26 @@ router.post("/create", (req, res) => {
 })
 
 router.post("/participation", (req, res) => {
-    console.log(req.body)
+    console.log
     if(req.body.params.eventId == undefined || req.body.params.eventId == null || req.body.params.userId == undefined || req.body.params.userId == null)
     {
         res.json({"error": "Must give an event and a user ID"})
         return;
     }
     config.query("INSERT INTO participation VALUES (NULL, ?, ?, 0)", [req.body.params.userId, req.body.params.eventId], (err, results) => {
+        if(err) return res.json({"error": err})
+        res.json(results)
+    })
+})
+
+router.post("/uninscription", (req, res) => {
+    console.log(req.body)
+    if(req.body.params.eventId == undefined || req.body.params.eventId == null || req.body.params.userId == undefined || req.body.params.userId == null)
+    {
+        res.json({"error": "Must give an event and a user ID"})
+        return;
+    }
+    config.query("DELETE FROM participation WHERE accountId = ? AND eventId = ?", [req.body.params.userId, req.body.params.eventId], (err, results) => {
         if(err) return res.json({"error": err})
         res.json(results)
     })

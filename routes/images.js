@@ -32,6 +32,17 @@ router.post('/eventupload', uploadEvent.array('eventPic'), (req, res) => {
     res.json({ message: 'Files uploaded successfully'});
 });
 
+router.delete('/eventdelete', (req, res) => {
+    if(req.body.images == null || req.body.images == undefined)
+    {
+        return res.json({"error": "must give images data"})
+    }
+    for(let i = 0; i < req.body.images.length; i++)
+    {
+        console.log(req.body.images[i])
+    }
+})
+
 router.post('/profileupload', uploadUser.single('profilePic'), (req, res) => {
     if(req.body.userId == null || req.body.userId == undefined)
     {
