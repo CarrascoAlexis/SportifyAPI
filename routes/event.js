@@ -33,7 +33,7 @@ router.get("/", (req, res) => {
 });
 
 router.get("/users", (req, res) => {
-    if(req.query.filter.eventId == undefined || req.query.filter.eventId == null)
+    if(!req.query.filter || req.query.filter.eventId == undefined || req.query.filter.eventId == null)
     {
         res.json({"error": "Must give an event ID"})
         return;

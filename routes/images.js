@@ -1,13 +1,11 @@
 const express = require('express');
 const router = express.Router()
+var fs = require('fs');
 
 const config = require('../config/connect')
 const {uploadUser, uploadEvent} = require('../config/multer')
 const { generateQuery, isEmpty, emptyParam } = require('../functions')
 
-router.get("/profile", (req, res) => {
-    
-});
 router.get("/event", (req, res) => {
     if(req.query.filter.eventId == undefined || req.query.filter.eventId == null)
     {
@@ -44,16 +42,22 @@ router.delete('/eventdelete', (req, res) => {
 })
 
 router.post('/profileupload', uploadUser.single('profilePic'), (req, res) => {
-    if(req.body.userId == null || req.body.userId == undefined)
+    if(!req.body.userId || !req.file)
     {
-        return res.json({"error": "must give a user id"})
+        return res.json({"error": "must give a user id and a file"})
     }
-    let fileName = "default.jpg"
-    if (req.file) {
-        fileName = req.file.filename
-    }
-    config.query("INSERT INTO profilepicture VALUES (NULL, ?, ?)", [req.body.userId, fileName])
-    res.json({ message: 'File uploaded successfully', filename: fileName });
+    config.query("SELECT profile FROM user WHERE id=?", [req.body.userId], (err, profile) => {
+        if(err) return res.json({"error": err})
+        config.query("UPDATE user SET profile=? WHERE id=?", [req.file.filename, req.body.userId], (err, results) => {
+            if(err) return res.json({"error": err})
+            if (fs.existsSync(`profiles/${profile[0]}`)) fs.unlinkSync(`profiles/${profile[0]}`, (err) => {
+                if(err) return console.log(err);
+                console.log('file deleted successfully');
+            });
+            res.json({ message: 'File uploaded successfully', filename: req.file.filename });
+        })
+    })
+    
 });
 
 module.exports = router;
