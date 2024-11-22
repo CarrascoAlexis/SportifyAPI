@@ -42,11 +42,11 @@ router.get("/connect", (req, res) => {
     }
     const givenPass = req.query.password
     config.query('SELECT id, pass, isEmploye, mail, profile FROM user WHERE `nickname`=?', [req.query.nickname], (err, results) => {
-        if (err) res.json({"error": err})
+        if (err) return res.json({"error": err})
         if(results.length != 0)
         {
             const cryptedPass = results[0].pass
-            config.query('SELECT PASSWORD(?) as pass', [givenPass], (err, response) => {
+            config.query('SELECT SELECT CONCAT('*', UPPER(SHA1(UNHEX(SHA1(?))))) as pass', [givenPass], (err, response) => {
                 if (err) res.json({"error": err})
                 givenCryptedPass = response[0].pass
                 if(givenCryptedPass == cryptedPass)
@@ -115,7 +115,7 @@ router.post("/create", (req, res) => {
         return
     }
     const user = req.body
-    config.query("INSERT INTO user VALUES (NULL, ?, ?, ?, PASSWORD(?), ?)", [user.nickname, user.isEmploye, user.mail, user.password, user.profile], (err, results) => {
+    config.query("INSERT INTO user VALUES (NULL, ?, ?, ?, SELECT CONCAT('*', UPPER(SHA1(UNHEX(SHA1(?))))), ?)", [user.nickname, user.isEmploye, user.mail, user.password, user.profile], (err, results) => {
         if(err) res.json({"error": err})
         else{
             res.json(results) 
