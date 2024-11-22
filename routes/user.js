@@ -45,8 +45,12 @@ router.get("/connect", (req, res) => {
         if(results.length != 0)
         {
             const cryptedPass = results[0].pass
-            config.query('SELECT SELECT CONCAT('*', UPPER(SHA1(UNHEX(SHA1(?))))) as pass', [givenPass], (err, response) => {
-                if (err) res.json({"error": err})
+            console.log(givenPass)
+            config.query("SELECT CONCAT('*', UPPER(SHA1(UNHEX(SHA1(?))))) as pass", [givenPass], (err, response) => {
+                if (err) {
+                    console.log("BAH OUI CONNARD")
+                    return res.json({"error": err})
+                }
                 givenCryptedPass = response[0].pass
                 if(givenCryptedPass == cryptedPass)
                 {
