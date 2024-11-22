@@ -37,8 +37,7 @@ router.get("/", (req, res) => {
 router.get("/connect", (req, res) => {
     if(req.query.nickname == undefined || req.query.nickname == null || req.query.password == undefined || req.query.password == null)
     {
-        res.json({"error": "must give a nickname and a password"})
-        return;
+        return res.json({"error": "must give a nickname and a password"})
     }
     const givenPass = req.query.password
     config.query('SELECT id, pass, isEmploye, mail, profile FROM user WHERE `nickname`=?', [req.query.nickname], (err, results) => {
@@ -54,25 +53,24 @@ router.get("/connect", (req, res) => {
                     require('crypto').randomBytes(48, function(err, buffer) {
                         const token = buffer.toString('hex');
                         config.query('INSERT INTO session VALUES (NULL, ?, ?)', [results[0].id, token], (err, sessionResults) => {
-                            if(err) res.json({"error": err})
-                            else res.json({"token": token, "user": {"nickname": req.query.nickname, "isEmploye": results[0].isEmploye, "mail": results[0].mail, "id": results[0].id, "profile": results[0].profile}})
+                            if(err) return res.json({"error": err})
+                            else return res.json({"token": token, "user": {"nickname": req.query.nickname, "isEmploye": results[0].isEmploye, "mail": results[0].mail, "id": results[0].id, "profile": results[0].profile}})
                         })
                       });
                     
                     return;
                 }
-                else res.json({"error": "Incorrect password or username"})
+                else return res.json({"error": "Incorrect password or username"})
             })
         }
-        else res.json({"error": "Incorrect password or username"})
+        else return res.json({"error": "Incorrect password or username"})
     })
 })
 
 router.get("/getSession", (req, res) => {
     if(req.query.token == undefined || req.query.token == null)
     {
-        res.json({"error": "must give a session token"})
-        return;
+        return res.json({"error": "must give a session token"})
     }
     config.query("SELECT userId FROM session WHERE token = ?", [req.query.token], (err, results) => {
         if(err) res.json({"error": err})
@@ -80,8 +78,7 @@ router.get("/getSession", (req, res) => {
         {
             if(results.length == 0)
             {
-                res.json({"error": "no session found"})
-                return
+                return res.json({"error": "no session found"})
             }
             config.query("SELECT nickname, isEmploye, mail, id, profile FROM user WHERE id = ?", [results[0].userId], (err, user) => {
                 if(err) res.json({"error": err})
@@ -89,7 +86,7 @@ router.get("/getSession", (req, res) => {
                 else
                 {
                     const userData = user[0]
-                    res.json(userData)
+                    return res.json(userData)
                 }   
             })
         }
@@ -99,20 +96,18 @@ router.get("/getSession", (req, res) => {
 router.post("/destroySession", (req, res) => {
     if(req.body.token == undefined || req.body.token == null)
     {
-        res.json({"error": "must give a session token"})
-        return;
+        return res.json({"error": "must give a session token"})
     }
     config.query("DELETE FROM session WHERE token = ?", [req.body.token], (err, results) => {
-        if(err) res.json({"error": err})
-        else res.json(results)
+        if(err) return res.json({"error": err})
+        else return res.json(results)
     })
 })
 
 router.post("/create", (req, res) => {
     if(req.body == null | req.body == undefined)
     {
-        res.json({"error": "Must give user data"})
-        return
+        return res.json({"error": "Must give user data"})
     }
     const user = req.body
     config.query("INSERT INTO user VALUES (NULL, ?, ?, ?, SELECT CONCAT('*', UPPER(SHA1(UNHEX(SHA1(?))))), ?)", [user.nickname, user.isEmploye, user.mail, user.password, user.profile], (err, results) => {
