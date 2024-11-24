@@ -60,4 +60,11 @@ router.post('/profileupload', uploadUser.single('profilePic'), (req, res) => {
     
 });
 
+router.get("/indexSlide", (req, res) => {
+    config.query("SELECT * FROM eventpicture ORDER BY RAND( ) LIMIT 4", (err, results) => {
+        if(err) return res.json({"error": err})
+        res.json(results)
+    })
+});
+
 module.exports = router;

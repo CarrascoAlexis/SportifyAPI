@@ -137,4 +137,8 @@ router.post("/uninscription", (req, res) => {
     })
 })
 
+router.get("/upcommingEvents", (req, res) => {
+    config.query("SELECT * FROM EVENT WHERE startDate")
+});
+
 module.exports = router;
