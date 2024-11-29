@@ -11,8 +11,8 @@ router.get("/", (req, res) => {
     if(req.query.filter == undefined || req.query.filter == null || isEmpty(req.query.filter))
     {
         config.query('SELECT * FROM event', (err, results) => {
-            if(err) res.json({"error": err})
-            else res.json(results)
+            if(err) return res.json({"error": err})
+            else return res.json(results)
         })
         return;
     }
@@ -21,13 +21,13 @@ router.get("/", (req, res) => {
     config.query("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = N'event';", (err, results) => {
         if(err)
         {
-            res.json({"error": err})
+            return res.json({"error": err})
             return;
         }
         // Puis on génère une requette SQL avec les paramètres récupérés au dessus  (se )
         config.query(generateQuery("event", results, req.query.filter), (err, results) => {
-            if(err) res.json({"error": err})
-            res.json(results)
+            if(err) return res.json({"error": err})
+            return res.json(results)
         })
     })
 });
@@ -41,14 +41,14 @@ router.get("/users", (req, res) => {
     if(req.query.filter.userId == undefined || req.query.filter.userId == null)
     {
         config.query("SELECT * FROM `participation` WHERE `eventId` = ?", [req.query.filter.eventId], (err, results) => {
-            if(err) res.json({"error": err})
+            if(err) return res.json({"error": err})
             return res.json(results)
         })
     }
     else
     {
         config.query("SELECT * FROM `participation` WHERE `eventId` = ? AND accountId = ?", [req.query.filter.eventId, req.query.filter.userId], (err, results) => {
-            if(err) res.json({"error": err})
+            if(err) return res.json({"error": err})
             return res.json(results)
         })
     }
@@ -58,26 +58,24 @@ router.get("/users", (req, res) => {
 router.post("/edit", (req, res) => {
     if(req.body == null | req.body == undefined)
     {
-        res.json({"error": "Must give event data"})
+        return res.json({"error": "Must give event data"})
         return
     }
     const event = req.body
     // On rendx l'event invisible a chaque modification de celui-ci
     config.query("UPDATE event SET title=?, description=?, isVisible=0, startDate=?, endDate=? WHERE ID = ?", [event.title, event.description, event.startDate, event.endDate, event.id], (err, results) => {
-        if(err) res.json({"error": err})
-        else res.json(results)
-        return
+        if(err) return res.json({"error": err})
+        else return res.json(results)
     })
 })
 
 router.post("/validate", (req, res) => {
     if(req.body.eventId == null | req.body.eventId == undefined)
     {
-        res.json({"error": "Must give event id"})
-        return
+        return res.json({"error": "Must give event id"}
     }
     config.query("UPDATE event SET isVisible=1 WHERE ID = ?", [req.body.eventId], (err, results) => {
-        if(err) res.json({"error": err})
+        if(err) return res.json({"error": err})
         else res.json(results)
         return
     })
