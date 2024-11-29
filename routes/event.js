@@ -72,7 +72,7 @@ router.post("/edit", (req, res) => {
 router.post("/validate", (req, res) => {
     if(req.body.eventId == null | req.body.eventId == undefined)
     {
-        return res.json({"error": "Must give event id"}
+        return res.json({"error": "Must give event id"})
     }
     config.query("UPDATE event SET isVisible=1 WHERE ID = ?", [req.body.eventId], (err, results) => {
         if(err) return res.json({"error": err})
